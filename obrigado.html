@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Aguarde, estamos te redirecionando...</title>
+    <style>
+        /* Estilos Globais e Reset */
+        :root {
+            --primary-color: #25D366; /* Cor principal (verde WhatsApp) */
+            --background-color: #FFFFFF; /* Fundo branco */
+            --text-color: #333333; /* Cor do texto */
+            --spinner-color: #DDDDDD;
+        }
+
+        body, html {
+            height: 100%;
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--background-color);
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            overflow: hidden;
+        }
+
+        /* Container Principal */
+        .container {
+            padding: 20px;
+        }
+
+        /* Animação do Carregador (Spinner) */
+        .loader {
+            border: 6px solid var(--spinner-color);
+            border-top: 6px solid var(--primary-color);
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            animation: spin 1.5s linear infinite;
+            margin: 0 auto 25px auto;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Textos */
+        h1 {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+        }
+
+        p {
+            font-size: 1.1em;
+            color: #666;
+        }
+
+        /* Estilo para o contador */
+        #countdown {
+            font-weight: bold;
+            color: var(--primary-color);
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="loader"></div>
+        <h1>Estamos preparando seu atendimento!</h1>
+        <p>Você será redirecionado em <span id="countdown">5</span> segundos...</p>
+    </div>
+
+    <script>
+        (function() {
+            // --- CONFIGURAÇÃO ---
+            // Adicione seus números de WhatsApp aqui, apenas os números com código do país.
+            const whatsappNumbers = [
+                '5511912345678', // Exemplo 1: São Paulo
+                '5521987654321', // Exemplo 2: Rio de Janeiro
+                '5531911223344'  // Exemplo 3: Minas Gerais
+            ];
+
+            // Mensagem opcional que será pré-preenchida no WhatsApp. Deixe em branco se não quiser nenhuma.
+            const message = "Olá! Gostaria de mais informações.";
+
+            // Tempo de espera em segundos
+            const redirectTime = 5;
+            // --------------------
+
+            // Lógica de seleção sequencial
+            function getNextNumber() {
+                let lastIndex = localStorage.getItem('lastWhatsappIndex');
+                let nextIndex;
+
+                if (lastIndex === null) {
+                    // Se for a primeira vez, usa o primeiro número
+                    nextIndex = 0;
+                } else {
+                    // Pega o próximo índice
+                    nextIndex = parseInt(lastIndex) + 1;
+                }
+
+                // Se o índice passar do tamanho da lista, volta para o início (ciclo)
+                if (nextIndex >= whatsappNumbers.length) {
+                    nextIndex = 0;
+                }
+
+                // Salva o novo índice para a próxima visita
+                localStorage.setItem('lastWhatsappIndex', nextIndex);
+
+                return whatsappNumbers[nextIndex];
+            }
+
+            // Função de redirecionamento
+            function redirect() {
+                const selectedNumber = getNextNumber();
+                const encodedMessage = encodeURIComponent(message);
+                const whatsappUrl = `https://wa.me/${selectedNumber}?text=${encodedMessage}`;
+                
+                // Redireciona o usuário
+                window.location.href = whatsappUrl;
+            }
+
+            // Lógica do contador visual
+            const countdownElement = document.getElementById('countdown');
+            let secondsLeft = redirectTime;
+
+            const countdownInterval = setInterval(() => {
+                secondsLeft--;
+                countdownElement.textContent = secondsLeft;
+
+                if (secondsLeft <= 0) {
+                    clearInterval(countdownInterval);
+                }
+            }, 1000);
+
+            // Inicia o temporizador para o redirecionamento
+            setTimeout(redirect, redirectTime * 1000);
+        })();
+    </script>
+
+</body>
+</html>
